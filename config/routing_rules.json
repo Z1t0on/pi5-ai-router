@@ -1,0 +1,663 @@
+{
+  "$schema": "https://opencode.vibe/schemas/routing_rules.json",
+  "updated_at": "2026-11-14T21:20:00Z",
+  "description": "Configuration de routage dynamique synchronisée strictement sur les modèles actifs (visibility=show) d'OpenCode.",
+  "global_policy": {
+    "strategy": "anti_429_active_models_only",
+    "free_tier_priority": true,
+    "auto_fallback_on_status_codes": [
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
+    "max_retries_per_route": 1,
+    "retry_delay_ms": 200,
+    "cooldown_429_seconds": 60,
+    "logging": {
+      "enabled": true,
+      "track_quota_exhaustion": true
+    }
+  },
+  "task_routing_matrix": {
+    "planning_architecture": {
+      "primary": {
+        "provider": "nvidia",
+        "model": "moonshotai/kimi-k3.1-pro"
+      },
+      "fallback_1": {
+        "provider": "kilo_code",
+        "model": "mistralai/mistral-large-2512"
+      },
+      "fallback_2": {
+        "provider": "aws_bedrock",
+        "model": "us.anthropic.claude-sonnet-5-5"
+      }
+    },
+    "general_coding_refactoring": {
+      "primary": {
+        "provider": "opencode_v2",
+        "model": "deepseek-v4.1-flash-free"
+      },
+      "fallback_1": {
+        "provider": "nvidia",
+        "model": "deepseek-ai/deepseek-v4.1-flash"
+      },
+      "fallback_2": {
+        "provider": "mistral",
+        "model": "codestral-2508"
+      }
+    },
+    "realtime_autocomplete": {
+      "primary": {
+        "provider": "cerebras",
+        "model": "qwen-3.8-27b"
+      },
+      "fallback_1": {
+        "provider": "opencode_v2",
+        "model": "glm-5.3-flash-free"
+      },
+      "fallback_2": {
+        "provider": "groq",
+        "model": "qwen/qwen3.8-27b"
+      }
+    },
+    "long_context_analysis": {
+      "primary": {
+        "provider": "google_ai_studio",
+        "model": "gemini-3.8-flash"
+      },
+      "fallback_1": {
+        "provider": "opencode_v2",
+        "model": "longcat-2.5-preview-free"
+      },
+      "fallback_2": {
+        "provider": "nvidia",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b"
+      }
+    },
+    "reasoning_deep_debug": {
+      "primary": {
+        "provider": "nvidia",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b"
+      },
+      "fallback_1": {
+        "provider": "opencode_v2",
+        "model": "nemotron-3-ultra-free"
+      },
+      "fallback_2": {
+        "provider": "deepseek_api",
+        "model": "deepseek-v4-pro"
+      }
+    },
+    "vision_ui_ux": {
+      "primary": {
+        "provider": "nvidia",
+        "model": "nvidia/nemotron-3.5-super-vl-120b-a12b"
+      },
+      "fallback_1": {
+        "provider": "opencode_v2",
+        "model": "nemotron-3.5-super-vl-free"
+      },
+      "fallback_2": {
+        "provider": "z_ai",
+        "model": "glm-4.6v-flash"
+      }
+    },
+    "high_throughput_batch": {
+      "primary": {
+        "provider": "cerebras",
+        "model": "gpt-oss-120b"
+      },
+      "fallback_1": {
+        "provider": "z_ai",
+        "model": "glm-4.7-flash"
+      },
+      "fallback_2": {
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b"
+      }
+    }
+  },
+  "providers": {
+    "aws_bedrock": {
+      "display_name": "AWS Bedrock",
+      "access_type": "Paid (Credit $200)",
+      "auth_env_var": "AWS_BEDROCK_API_KEY",
+      "base_url": "https://api.aws",
+      "quotas": {
+        "budget_credit_usd": 200.0,
+        "region": "us-east-1",
+        "notes": "Bloqué à 100% tant que BEDROCK_LOCKED=true dans le .env."
+      },
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "Claude Sonnet 5.5 (US)",
+          "model_id": "us.anthropic.claude-sonnet-5-5",
+          "recommended_usage": "Refactorisation complexe et architecture critique (si déverrouillé).",
+          "fallback_route": {
+            "provider": "google_ai_studio",
+            "model": "gemini-3.8-flash"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "Claude Haiku 5.5 (US)",
+          "model_id": "us.anthropic.claude-haiku-5-5",
+          "recommended_usage": "Exécution rapide haute précision à faible coût.",
+          "fallback_route": {
+            "provider": "google_ai_studio",
+            "model": "gemini-3.5-flash-lite"
+          }
+        }
+      ]
+    },
+    "cerebras": {
+      "display_name": "Cerebras Inference",
+      "access_type": "Free Tier",
+      "auth_env_var": "CEREBRAS_API_KEY",
+      "base_url": "https://cerebras.ai",
+      "quotas": {
+        "notes": "Inférence ultra-rapide idéale pour absorber les requêtes en rafale."
+      },
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "Qwen 3.8 27B",
+          "model_id": "qwen-3.8-27b",
+          "recommended_usage": "Autocomplétion temps réel et génération rapide de code.",
+          "fallback_route": {
+            "provider": "groq",
+            "model": "qwen/qwen3.8-27b"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "GPT-OSS 120B",
+          "model_id": "gpt-oss-120b",
+          "recommended_usage": "Raisonnement généraliste à très haute vitesse.",
+          "fallback_route": {
+            "provider": "groq",
+            "model": "openai/gpt-oss-120b"
+          }
+        }
+      ]
+    },
+    "cloudflare": {
+      "display_name": "Cloudflare Workers AI",
+      "access_type": "Free Tier",
+      "auth_env_var": "CLOUDFLARE_API_TOKEN",
+      "base_url": "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+      "quotas": {
+        "daily_neurons": 10000,
+        "daily_requests": 100000,
+        "notes": "Reset quotidien automatique à 00:00 UTC."
+      },
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "Qwen 3.8 27B",
+          "model_id": "@cf/qwen/qwen3.8-27b",
+          "recommended_usage": "Codage et autocomplétion de secours sans coût.",
+          "fallback_route": {
+            "provider": "opencode_v2",
+            "model": "glm-5.3-flash-free"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "GPT-OSS 120B",
+          "model_id": "@cf/openai/gpt-oss-120b",
+          "recommended_usage": "Raisonnement généraliste de secours.",
+          "fallback_route": {
+            "provider": "groq",
+            "model": "openai/gpt-oss-120b"
+          }
+        },
+        {
+          "priority": 3,
+          "model_name": "Llama 3.3 70B FP8 Fast",
+          "model_id": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "recommended_usage": "Traitement rapide de gros volume.",
+          "fallback_route": {
+            "provider": "sambanova",
+            "model": "Meta-Llama-3.3-70B-Instruct"
+          }
+        }
+      ]
+    },
+    "cohere": {
+      "display_name": "Cohere API",
+      "access_type": "Free Trial Key",
+      "auth_env_var": "COHERE_API_KEY",
+      "base_url": "https://cohere.ai",
+      "quotas": {
+        "rpm": 20,
+        "monthly_api_calls": 1000
+      },
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "Command A Reasoning",
+          "model_id": "command-a-reasoning-08-2025",
+          "recommended_usage": "Raisonnement métier et synthèse RAG complexe.",
+          "fallback_route": {
+            "provider": "nvidia",
+            "model": "nvidia/nemotron-3-ultra-550b-a55b"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "North Mini Code 1.0",
+          "model_id": "north-mini-code-1-0",
+          "recommended_usage": "Génération et complétion ciblée.",
+          "fallback_route": {
+            "provider": "opencode_v2",
+            "model": "glm-5.3-flash-free"
+          }
+        },
+        {
+          "priority": 3,
+          "model_name": "Command A Plus",
+          "model_id": "command-a-plus-05-2026",
+          "recommended_usage": "Analyse documentaire et JSON structuré.",
+          "fallback_route": {
+            "provider": "z_ai",
+            "model": "glm-4.7-flash"
+          }
+        }
+      ]
+    },
+    "deepseek_api": {
+      "display_name": "DeepSeek Official API",
+      "access_type": "Pay-as-you-go",
+      "auth_env_var": "DEEPSEEK_API_KEY",
+      "base_url": "https://deepseek.com",
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "DeepSeek V4.1 Flash",
+          "model_id": "deepseek-flash",
+          "recommended_usage": "Secours haute disponibilité pour le codage général.",
+          "fallback_route": {
+            "provider": "opencode_v2",
+            "model": "deepseek-v4.1-flash-free"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "DeepSeek V4 Pro",
+          "model_id": "deepseek-v4-pro",
+          "recommended_usage": "Débogage et refactorisation guidée.",
+          "fallback_route": {
+            "provider": "nvidia",
+            "model": "nvidia/nemotron-3-ultra-550b-a55b"
+          }
+        }
+      ]
+    },
+    "google_ai_studio": {
+      "display_name": "Google AI Studio",
+      "access_type": "Free Tier",
+      "auth_env_var": "GEMINI_API_KEY",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "quotas": {
+        "rpm": 15,
+        "rpd": 500
+      },
+      "top_3_models": [
+        {
+          "priority": 1,
+          "model_name": "Gemini 3.8 Flash",
+          "model_id": "gemini-3.8-flash",
+          "recommended_usage": "Ingestion de dépôts complets et analyse de longs contextes.",
+          "fallback_route": {
+            "provider": "opencode_v2",
+            "model": "longcat-2.5-preview-free"
+          }
+        },
+        {
+          "priority": 2,
+          "model_name": "Gemini 3.5 Flash Lite",
+          "model_id": "gemini-3.5-flash-lite",
+          "recommended_usage": "Explications rapides à haut quota quotidien (500 RPD).",
+          "fallback_route": {
+            "provider": "z_ai",
+
+"model": "glm-4.7-flash"
+}
+}
+]
+},
+"groq": {
+"display_name": "Groq Cloud",
+"access_type": "Free Tier",
+"auth_env_var": "GROQ_API_KEY",
+"base_url": "groq.com",
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "Qwen 3.8 27B",
+"model_id": "qwen/qwen3.8-27b",
+"recommended_usage": "Autocomplétion et génération rapide de fonctions.",
+"fallback_route": {
+"provider": "cerebras",
+"model": "qwen-3.8-27b"
+}
+},
+{
+"priority": 2,
+"model_name": "OpenAI GPT-OSS 120B",
+"model_id": "openai/gpt-oss-120b",
+"recommended_usage": "Raisonnement généraliste rapide à haute vitesse.",
+"fallback_route": {
+"provider": "cerebras",
+"model": "gpt-oss-120b"
+}
+}
+]
+},
+"kilo_code": {
+"display_name": "Kilo Code",
+"access_type": "Free Tier Router",
+"auth_env_var": "KILO_API_KEY",
+"base_url": "kilo.ai",
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "Mistral Large 2512",
+"model_id": "mistralai/mistral-large-2512",
+"recommended_usage": "Raisonnement complexe et refactorisation multi-fichiers.",
+"fallback_route": {
+"provider": "mistral",
+"model": "codestral-2508"
+}
+},
+{
+"priority": 2,
+"model_name": "Ling 3.0 Flash Fin",
+"model_id": "inclusionai/ling-3.0-flash-fin",
+"recommended_usage": "Traitement rapide et analyse structurée.",
+"fallback_route": {
+"provider": "z_ai",
+"model": "glm-4.7-flash"
+}
+}
+]
+},
+"mistral": {
+"display_name": "Mistral AI",
+"access_type": "Free / Standard Tier",
+"auth_env_var": "MISTRAL_API_KEY",
+"base_url": "mistral.ai",
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "Codestral 2508",
+"model_id": "codestral-2508",
+"recommended_usage": "Génération de code et suites de tests unitaires.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "deepseek-v4.1-flash-free"
+}
+},
+{
+"priority": 2,
+"model_name": "Mistral Small Latest",
+"model_id": "mistral-small-latest",
+"recommended_usage": "Tâches de routine et appels d'outils rapides.",
+"fallback_route": {
+"provider": "z_ai",
+"model": "glm-4.7-flash"
+}
+},
+{
+"priority": 3,
+"model_name": "Ministral 8B 2512",
+"model_id": "ministral-8b-2512",
+"recommended_usage": "Classification et micro-tâches instantanées.",
+"fallback_route": {
+"provider": "cerebras",
+"model": "qwen-3.8-27b"
+}
+}
+]
+},
+"nvidia": {
+"display_name": "NVIDIA NIM",
+"access_type": "Free Tier API",
+"auth_env_var": "NVIDIA_API_KEY",
+"base_url": "nvidia.com",
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "DeepSeek V4.1 Flash (NIM)",
+"model_id": "deepseek-ai/deepseek-v4.1-flash",
+"recommended_usage": "Codage généraliste rapide et fiable.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "deepseek-v4.1-flash-free"
+}
+},
+{
+"priority": 2,
+"model_name": "Nemotron 3 Ultra 550B",
+"model_id": "nvidia/nemotron-3-ultra-550b-a55b",
+"recommended_usage": "Débogage profond, traces CoT et chaînes de pensée.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "nemotron-3-ultra-free"
+}
+},
+{
+"priority": 3,
+"model_name": "Nemotron 3.5 Super VL 120B",
+"model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+"recommended_usage": "Analyse visuelle des maquettes et captures d'écran UI/UX.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "nemotron-3.5-super-vl-free"
+}
+},
+{
+"priority": 4,
+"model_name": "Kimi K3.1 Pro (NIM)",
+"model_id": "moonshotai/kimi-k3.1-pro",
+"recommended_usage": "Planification d'architecture et conception technique haut niveau.",
+"fallback_route": {
+"provider": "kilo_code",
+"model": "mistralai/mistral-large-2512"
+}
+}
+]
+},
+"opencode_v2": {
+"display_name": "OpenCode Console (Zen API)",
+"access_type": "Free Tier API",
+"auth_env_var": "OPENCODE_API_KEY",
+"base_url": "opencode.ai",
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "DeepSeek V4.1 Flash Free",
+"model_id": "deepseek-v4.1-flash-free",
+"recommended_usage": "Moteur natif pour le codage quotidien et les agents de refactorisation.",
+"fallback_route": {
+"provider": "nvidia",
+"model": "deepseek-ai/deepseek-v4.1-flash"
+}
+},
+{
+"priority": 2,
+"model_name": "GLM-5.3 Flash Free",
+"model_id": "glm-5.3-flash-free",
+"recommended_usage": "Exécution rapide, documentation et appels d'outils mcp.",
+"fallback_route": {
+"provider": "z_ai",
+"model": "glm-4.7-flash"
+}
+},
+{
+"priority": 3,
+"model_name": "Nemotron 3.5 Super VL Free",
+"model_id": "nemotron-3.5-super-vl-free",
+"recommended_usage": "Analyse visuelle gratuite.",
+"fallback_route": {
+"provider": "z_ai",
+"model": "glm-4.6v-flash"
+}
+},
+{
+"priority": 4,
+"model_name": "Nemotron 3 Ultra Free",
+"model_id": "nemotron-3-ultra-free",
+"recommended_usage": "Raisonnement avancé gratuit.",
+"fallback_route": {
+"provider": "nvidia",
+"model": "nvidia/nemotron-3-ultra-550b-a55b"
+}
+},
+{
+"priority": 5,
+"model_name": "Longcat 2.5 Preview Free",
+"model_id": "longcat-2.5-preview-free",
+"recommended_usage": "Secours gratuit pour l'analyse de contextes étendus.",
+"fallback_route": {
+"provider": "google_ai_studio",
+"model": "gemini-3.8-flash"
+}
+}
+]
+},
+"openrouter": {
+"display_name": "OpenRouter Free Tier",
+"access_type": "Free Tier Router",
+"auth_env_var": "OPENROUTER_API_KEY",
+"base_url": "openrouter.ai",
+"quotas": {
+"rpm": 20
+},
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "Inception Mercury 3",
+"model_id": "inception/mercury-3",
+"recommended_usage": "Génération à très haut débit.",
+"fallback_route": {
+"provider": "cerebras",
+"model": "qwen-3.8-27b"
+}
+},
+{
+"priority": 2,
+"model_name": "Nemotron 3.5 Lightning Free",
+"model_id": "nvidia/nemotron-3.5-lightning:free",
+"recommended_usage": "Réponses instantanées à très basse latence.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "glm-5.3-flash-free"
+}
+},
+{
+"priority": 3,
+"model_name": "Inkling 2 Small Free",
+"model_id": "thinkingmachines/inkling-2-small:free",
+"recommended_usage": "Secours de volume gratuit.",
+"fallback_route": {
+"provider": "z_ai",
+"model": "glm-4.7-flash"
+}
+}
+]
+},
+"sambanova": {
+"display_name": "SambaNova Systems",
+"access_type": "Free Tier API",
+"auth_env_var": "SAMBANOVA_API_KEY",
+"base_url": "sambanova.ai",
+"quotas": {
+"rpm": 20,
+"rpd": 20
+},
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "DeepSeek V3.2",
+"model_id": "DeepSeek-V3.2",
+"recommended_usage": "Inférence MoE rapide pour le codage de secours.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "deepseek-v4.1-flash-free"
+}
+},
+{
+"priority": 2,
+"model_name": "GPT-OSS 120B",
+"model_id": "gpt-oss-120b",
+"recommended_usage": "Raisonnement généraliste à haute densité.",
+"fallback_route": {
+"provider": "cerebras",
+"model": "gpt-oss-120b"
+}
+},
+{
+"priority": 3,
+"model_name": "Meta Llama 3.3 70B Instruct",
+"model_id": "Meta-Llama-3.3-70B-Instruct",
+"recommended_usage": "Génération de code et rédaction technique structurée.",
+"fallback_route": {
+"provider": "cloudflare",
+"model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+}
+}
+]
+},
+"z_ai": {
+"display_name": "Z.AI Models",
+"access_type": "Free Tier Public API",
+"auth_env_var": "ZAI_API_KEY",
+"base_url": "z.ai",
+"quotas": {
+"estimated_rpm": 60,
+"estimated_rpd": 1000,
+"notes": "Réservoir de volume massif idéal pour amortir les requêtes d'agents."
+},
+"top_3_models": [
+{
+"priority": 1,
+"model_name": "GLM-4.7-Flash",
+"model_id": "glm-4.7-flash",
+"recommended_usage": "Traitement par lots, documentation et requêtes de routine à 0$.",
+"fallback_route": {
+"provider": "opencode_v2",
+"model": "glm-5.3-flash-free"
+}
+},
+{
+"priority": 2,
+"model_name": "GLM-4.6V-Flash",
+"model_id": "glm-4.6v-flash",
+"recommended_usage": "Analyse visuelle et lecture de maquettes à 0$.",
+"fallback_route": {
+"provider": "nvidia",
+"model": "nvidia/nemotron-3.5-super-vl-120b-a12b"
+}
+},
+{
+"priority": 3,
+"model_name": "GLM-4.5-Flash",
+"model_id": "glm-4.5-flash",
+"recommended_usage": "Secours de routine léger haute disponibilité.",
+"fallback_route": {
+"provider": "mistral",
+"model": "mistral-small-latest"
+}
+}
+]
+}
+}
+}
+
+

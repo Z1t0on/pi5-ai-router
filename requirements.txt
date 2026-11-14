@@ -1,0 +1,25 @@
+# Dépendances Python de `pi5-ai-router` (amd64 + arm64, sans PyTorch/TensorFlow).
+
+# API
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.7,<3.0
+pydantic-settings>=2.3,<3.0
+python-multipart>=0.0.9,<0.1
+
+# Client HTTP asynchrone des fournisseurs
+httpx>=0.27,<1.0
+
+# Classifieur sémantique local (ONNX Runtime, modèle pré-téléchargé au build)
+fastembed>=0.4,<1.0
+numpy>=1.26,<3.0
+
+# Persistance des logs et de l'état système
+aiosqlite>=0.20,<1.0
+
+# Adaptateur AWS Bedrock
+boto3>=1.34,<2.0
+
+# Tests
+pytest>=8.2,<9.0
+pytest-asyncio>=0.23,<2.0

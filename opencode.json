@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "pi5-router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Raspberry Pi 5 AI Router",
+      "options": {
+        "baseURL": "http://192.168.1.44:4000/v1",
+        "apiKey": "local-pi5-router"
+      },
+      "models": {
+        "smart-router": {
+          "name": "Smart Router (Auto-Classification)"
+        },
+        "smart-router-plan": {
+          "name": "Smart Router (#plan - Architecture)"
+        },
+        "smart-router-debug": {
+          "name": "Smart Router (#debug - Deep Reasoning)"
+        },
+        "smart-router-code": {
+          "name": "Smart Router (#code - Refactoring)"
+        },
+        "smart-router-fast": {
+          "name": "Smart Router (#fast - Autocomplete)"
+        }
+      }
+    }
+  }
+}
