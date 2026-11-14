@@ -1,4 +1,6 @@
-"""Classifieur hybride (règles déterministes + embeddings FastEmbed/ONNX).
+"""Classifieur hybride (règles déterministes + embeddings FastEmbed/ONNX)."""
 
-Implémenté à l'Étape 2 du plan d'architecture maître.
-"""
+from app.classifier.hybrid import TaskClassifier
+from app.classifier.semantic import SemanticClassifier
+
+__all__ = ["TaskClassifier", "SemanticClassifier"]

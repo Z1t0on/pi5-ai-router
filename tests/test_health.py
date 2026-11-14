@@ -24,7 +24,7 @@ def test_health_endpoint_returns_200_and_expected_keys(client: TestClient) -> No
     assert EXPECTED_HEALTH_KEYS <= payload.keys()
     assert payload["status"] == "ok"
     assert payload["rules_loaded"] is True
-    assert payload["classifier_ready"] is False
+    assert payload["classifier_ready"] is True
 
 
 def test_health_locks_bedrock_by_default(client: TestClient) -> None:

@@ -299,4 +299,4 @@ L'agent `build` devra créer et faire passer l'intégralité des tests suivants 
    - `test_upload_rules_validates_schema_and_rejects_invalid_json`
    - `test_api_logs_returns_last_50_entries_without_prompt_bodies`
 
-> **Note de suivi** : ce document est la version canonique du plan (copie de travail `.opencode/plans/2026-11-14-master-plan.md`). Avancement : **Étape 1 terminée** (squelette FastAPI, `httpx.AsyncClient` partagé dans le `lifespan`, `/health`, `/v1/models`, schémas Pydantic, tests verts). Les étapes 2 à 6 restent à implémenter.
+> **Note de suivi** : ce document est la version canonique du plan (copie de travail `.opencode/plans/2026-11-14-master-plan.md`). Avancement : **Étapes 1 et 2 terminées** (squelette FastAPI + healthcheck ; classifieur hybride `fastembed`/ONNX avec règles déterministes, warmup au `lifespan`, 41 tests verts, latences mesurées : 0,007 ms déterministe et 5,6 ms sémantique). Les étapes 3 à 6 restent à implémenter.

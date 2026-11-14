@@ -8,6 +8,7 @@ aux étapes suivantes.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -21,6 +22,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from app.classifier.hybrid import TaskClassifier
 from app.schemas import ChatCompletionRequest, RoutingRulesSchema
 
 logger = logging.getLogger("pi5_ai_router.health")
@@ -79,16 +81,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         follow_redirects=True,
     )
     app.state.started_at = time.time()
-    app.state.classifier_ready = False  # Étape 2 (FastEmbed/ONNX).
     app.state.rules_loaded = False
     app.state.rules_updated_at = None
+
+    classifier = TaskClassifier()
+    try:
+        # Chargement ONNX + pré-calcul des ancres hors boucle d'événements.
+        await asyncio.to_thread(classifier.warmup)
+    except Exception as exc:  # noqa: BLE001 - le routeur reste disponible en mode dégradé
+        logger.warning("classifier warmup failed: %s", exc)
+    app.state.classifier = classifier
+    app.state.classifier_ready = classifier.ready
 
     status = check_rules()
     app.state.rules_loaded = status["rules_loaded"]
     app.state.rules_updated_at = status["rules_updated_at"]
     logger.info(
-        "router started (rules_loaded=%s, bedrock_locked=%s)",
+        "router started (rules_loaded=%s, classifier_ready=%s, bedrock_locked=%s)",
         status["rules_loaded"],
+        classifier.ready,
         bedrock_locked(),
     )
 

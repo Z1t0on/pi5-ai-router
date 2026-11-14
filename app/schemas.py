@@ -17,6 +17,16 @@ MessageRole = Literal["system", "user", "assistant", "tool"]
 
 DEFAULT_FALLBACK_STATUS_CODES: tuple[int, ...] = (429, 500, 502, 503, 504)
 
+# Méthode ayant produit la catégorie de routage (ordre de priorité du classifieur).
+ClassificationMethod = Literal[
+    "alias",
+    "tag",
+    "multimodal",
+    "long_context",
+    "semantic",
+    "fallback_default",
+]
+
 
 # --------------------------------------------------------------------------- #
 # Contrats OpenAI entrants
@@ -56,6 +66,19 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: int | None = Field(default=None, gt=0)
     tools: list[dict[str, Any]] | None = None
     tool_choice: Any | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Sortie du classifieur
+# --------------------------------------------------------------------------- #
+class ClassificationResult(BaseModel):
+    """Catégorie de routage retenue pour une requête entrante."""
+
+    category: str
+    method: ClassificationMethod
+    cleaned_messages: list[ChatMessage]
+    latency_ms: float = Field(ge=0.0)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
 
 # --------------------------------------------------------------------------- #

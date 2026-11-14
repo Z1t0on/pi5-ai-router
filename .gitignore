@@ -12,3 +12,6 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+
+# Cache des modèles FastEmbed (pré-téléchargés au build Docker)
+.cache/
