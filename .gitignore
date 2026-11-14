@@ -1,0 +1,14 @@
+# Secrets et artefacts locaux — ne jamais versionner.
+.env
+.env.*
+!.env.example
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
